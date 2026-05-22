@@ -1,0 +1,185 @@
+
+QUERY 1
+
+YoY employment change by GEO (Canada vs Ontario)
+	For Canada and Ontario:
+		- year-by-year employment growth %
+		- acceleration or slowdown
+		- pandemic recovery pattern
+		- regional comparison
+
+
+WITH yearly_avg AS (
+    SELECT
+        ref_year,
+        geo,
+        AVG(value) AS avg_employment
+    FROM lfs_clean
+    WHERE labour_force = 'Employment'
+      AND gender = 'Total - Gender'
+      AND age_group = '15 years and over'
+    GROUP BY ref_year, geo
+),
+yoy AS (
+    SELECT
+        geo,
+        ref_year,
+        avg_employment,
+        LAG(avg_employment) OVER (
+            PARTITION BY geo
+            ORDER BY ref_year
+        ) AS prev_year,
+        ROUND(
+            (
+                (avg_employment - LAG(avg_employment) OVER (
+                    PARTITION BY geo
+                    ORDER BY ref_year
+                ))
+                / NULLIF(LAG(avg_employment) OVER (
+                    PARTITION BY geo
+                    ORDER BY ref_year
+                ), 0)
+            ) * 100,
+        2) AS yoy_pct_change
+    FROM yearly_avg
+)
+SELECT *
+FROM yoy
+WHERE yoy_pct_change IS NOT NULL
+ORDER BY geo, ref_year;
+
+
+
+#####################################################################################################
+
+QUERY 2
+
+Ontario vs Canada Share of Employment
+		What this tell us
+		- Ontario’s share of national employment
+		- whether Ontario is gaining or losing economic weight
+		- structural regional dependency
+
+
+WITH canada AS (
+    SELECT
+        ref_year,
+        AVG(value) AS canada_employment
+    FROM lfs_clean
+    WHERE geo = 'Canada'
+      AND labour_force = 'Employment'
+      AND gender = 'Total - Gender'
+      AND age_group = '15 years and over'
+    GROUP BY ref_year
+),
+ontario AS (
+    SELECT
+        ref_year,
+        AVG(value) AS ontario_employment
+    FROM lfs_clean
+    WHERE geo = 'Ontario'
+      AND labour_force = 'Employment'
+      AND gender = 'Total - Gender'
+      AND age_group = '15 years and over'
+    GROUP BY ref_year
+)
+SELECT
+    c.ref_year,
+    c.canada_employment,
+    o.ontario_employment,
+    ROUND((o.ontario_employment / NULLIF(c.canada_employment, 0)) * 100, 2) AS ontario_share_pct
+FROM canada c
+JOIN ontario o ON c.ref_year = o.ref_year
+ORDER BY c.ref_year;
+
+
+#####################################################################################################
+
+QUERY 3
+
+Ranking labour force categories
+
+	What this tells us
+		- Employment vs Unemployment vs Part-time vs Full-time ranking
+		- Structural labour composition insight
+		- Very good for “labour market structure” explanation
+
+SELECT
+    labour_force,
+    ROUND(AVG(value), 1) AS avg_value,
+    RANK() OVER (ORDER BY AVG(value) DESC) AS rank
+FROM lfs_clean
+WHERE geo = 'Ontario'
+  AND gender = 'Total - Gender'
+  AND age_group = '15 years and over'
+GROUP BY labour_force
+ORDER BY rank;
+
+
+#####################################################################################################
+
+QUERY 4
+
+Yearly Running Total + Trend
+
+	What this tells us
+	- cumulative labour market growth over time
+	- yearly acceleration/deceleration
+	- trend momentum
+
+
+WITH yearly_totals AS (
+    SELECT
+        ref_year,
+        geo,
+        SUM(value) AS total_employment
+    FROM lfs_clean
+    WHERE labour_force = 'Employment'
+      AND gender = 'Total - Gender'
+      AND age_group = '15 years and over'
+      AND geo = 'Ontario'
+    GROUP BY ref_year, geo
+)
+SELECT
+    ref_year,
+    total_employment,
+    SUM(total_employment) OVER (ORDER BY ref_year) AS running_total,
+    total_employment - LAG(total_employment) OVER (ORDER BY ref_year) AS yoy_change,
+    ROUND(
+        (
+            (total_employment - LAG(total_employment) OVER (ORDER BY ref_year))
+            / NULLIF(LAG(total_employment) OVER (ORDER BY ref_year), 0)
+        ) * 100,
+    2) AS yoy_pct_change
+FROM yearly_totals
+ORDER BY ref_year;
+
+
+#####################################################################################################
+
+QUERY 5
+
+Demographic Segmentation
+
+	What this tells us
+	- youth vs prime age vs older workers
+	- gender distribution within age segments
+	- classification of labour intensity
+
+SELECT
+    age_group,
+    gender,
+    ROUND(AVG(value), 1) AS avg_value,
+    CASE
+        WHEN AVG(value) > 1000 THEN 'High'
+        WHEN AVG(value) BETWEEN 500 AND 1000 THEN 'Medium'
+        ELSE 'Low'
+    END AS employment_tier
+FROM lfs_clean
+WHERE geo = 'Ontario'
+  AND labour_force = 'Employment'
+  AND age_group != '15 years and over'
+  AND gender != 'Total - Gender'
+GROUP BY age_group, gender
+ORDER BY avg_value DESC;
+

@@ -1,0 +1,32 @@
+-- Employment Trend Over Time
+
+SELECT
+    ref_year,
+    AVG(value) AS avg_employment
+FROM lfs_clean
+WHERE labour_force = 'Employment'
+GROUP BY ref_year
+ORDER BY ref_year;
+
+
+-- Ontario vs Canada Employment
+
+SELECT
+    ref_year,
+    geo,
+    AVG(value) AS avg_employment
+FROM lfs_clean
+WHERE labour_force = 'Employment'
+GROUP BY ref_year, geo
+ORDER BY ref_year, geo;
+
+
+-- Gender Employment Comparison
+
+SELECT
+    gender,
+    AVG(value) AS avg_employment
+FROM lfs_clean
+WHERE labour_force = 'Employment'
+GROUP BY gender
+ORDER BY avg_employment DESC;
