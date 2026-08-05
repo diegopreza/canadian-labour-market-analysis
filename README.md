@@ -15,6 +15,7 @@ The project demonstrates end-to-end data engineering and analytics skills includ
 
 **Tools used:** PostgreSQL · pgAdmin · psql · Python · VS Code
 
+Extended into Power BI: the same dataset was rebuilt as a star-schema data model with DAX measures and an interactive two-page report, cross-validating results against the original SQL analysis. Tools used: Power BI Desktop · Power Query · DAX
 ---
 
 ## Data Source
@@ -39,6 +40,12 @@ canadian-labour-market-analysis/
 │   └── analysis_queries.sql     # All 5 analytical queries
 ├── results/                     # Screenshots of query outputs
 ├── images/                      # Charts and visualizations
+├── power-bi/                    # Power BI extension
+│   ├── Canada Labour Market Analysis 2021-2025.pbix
+│   ├── Canada Labour Market Report 2021-2025.pdf
+│   └── Power BI Screenshots/
+│       ├── Page 1 - Results.png
+│       └── Page 2 - Industries.png
 │
 ├── findings.md                  # Detailed findings narrative
 ├── executive_summary.md         # High-level summary
@@ -299,6 +306,30 @@ Full-time employment averaged **1,111,300** compared to part-time at **231,300**
 The 25–54 cohort drives Ontario employment by a wide margin (Men+: 461,600 — High tier; Women+: 423,800 — High tier). The 55+ cohort falls into the Medium tier (Men+: 157,300; Women+: 130,200). Youth employment (15–24) lands in the Low tier but shows near gender parity: **Men+ at 87,000 vs Women+ at 82,700** — a gap of under 5%.
 
 ---
+## Power BI Extension
+
+To demonstrate the same analysis in a BI/reporting tool, this project was extended into Power BI — connecting to the raw Statistics Canada source directly (not the SQL output) to practice the full data-to-dashboard workflow.
+
+**What was built:**
+- Power Query transformation pipeline replicating the SQL staging/clean logic (type casting, null filtering, whitespace trimming)
+- A star-schema data model with a Year dimension table and Geography dimension table, related to the fact table
+- Five DAX measures using `CALCULATE`, `FILTER`, and `DIVIDE`: Total Employment, YoY Growth %, Ontario Share of National %, Running Total Employment, and Total Employment by Industry
+- A two-page interactive report with slicers, a cross-tab industry breakdown, and synced filtering across pages
+
+**Cross-validation:** Power BI results were checked against the original SQL findings. This surfaced a real discrepancy — the Power BI model initially summed duplicate StatsCan estimate vectors that the SQL analysis had averaged away — which was identified and corrected.
+
+**Report pages:**
+
+![Results page](power-bi/Power%20BI%20Screenshots/Page%201%20-%20Results.png)
+*Page 1 — Year-over-year employment trends, running totals, and Ontario's share of national employment, filterable by year and geography*
+
+![Industries page](power-bi/Power%20BI%20Screenshots/Page%202%20-%20Industries.png)
+*Page 2 — Employment broken out by industry (NAICS), synced to the same year filter*
+
+**Files:**
+- [`.pbix` file](power-bi/Canada%20Labour%20Market%20Analysis%202021-2025.pbix) — open in Power BI Desktop to explore the model and measures directly
+- [PDF export](power-bi/Canada%20Labour%20Market%20Report%202021-2025.pdf) — static view of both report pages
+---
 
 ## How to Reproduce This Analysis
 
@@ -308,6 +339,7 @@ The 25–54 cohort drives Ontario employment by a wide margin (Men+: 461,600 —
 4. Load CSVs into `lfs_raw` using `COPY` or pgAdmin's import tool
 5. Run cleaning steps (see `schema/create_tables.sql`)
 6. Run `queries/analysis_queries.sql` to reproduce all five analyses
+7. To reproduce the Power BI extension: download raw data from the same StatsCan table (CSV selected data — for database loading format), open `power-bi/Canada Labour Market Analysis 2021-2025.pbix` in Power BI Desktop, or review `power-bi/Canada Labour Market Report 2021-2025.pdf` for a static view
 
 ---
 
