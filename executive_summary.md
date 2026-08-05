@@ -1,7 +1,7 @@
 # Executive Summary
 
 ## Canadian Labour Market Analysis (2021–2025)
-**Tool:** PostgreSQL · **Data:** Statistics Canada Labour Force Survey · **Period:** 2021–2025
+**Tool:** PostgreSQL · Power BI · **Data:** Statistics Canada Labour Force Survey · **Period:** 2021–2025
 
 ---
 
@@ -21,6 +21,7 @@ A PostgreSQL analytics pipeline consisting of:
 - A clean analytical table (`lfs_clean`) with proper type casting and NULL handling
 - Five SQL queries using CTEs, window functions (LAG, SUM OVER), JOINs, RANK, and CASE segmentation
 - Documented findings across year-over-year growth, regional share analysis, labour force composition, and demographic segmentation
+- Extended into Power BI: a star-schema data model (Year and Geography dimension tables) with DAX measures (CALCULATE, FILTER, DIVIDE) for YoY growth, share-of-total, and running totals, presented in a two-page interactive report
 
 ---
 
@@ -47,6 +48,9 @@ The 25–54 cohort leads at 461,600 (Men+) and 423,800 (Women+).
 Youth employment (15–24) shows a gender gap of under 5%: 87,000 vs 82,700.
 
 ---
+Power BI Validation
+The SQL findings above were independently reproduced in Power BI using a separate data model built directly from the raw Statistics Canada source. This cross-validation surfaced a real discrepancy: the initial Power BI measure summed duplicate StatsCan estimate vectors that the SQL analysis had averaged away, which was identified and corrected — a useful check on data integrity across tools, not just a visualization exercise.
+---
 
 ## Skills Demonstrated
 
@@ -61,3 +65,7 @@ Youth employment (15–24) shows a gender gap of under 5%: 87,000 vs 82,700.
 | Analytical thinking | Identifying deceleration pattern, share stability, demographic segmentation |
 
 | Documentation | Findings narrative, executive summary, GitHub README |
+
+| Data modeling | Star-schema design with fact/dimension relationships in Power BI |
+
+| DAX | CALCULATE, FILTER, DIVIDE for YoY growth, share-of-total, and running-total measures |
