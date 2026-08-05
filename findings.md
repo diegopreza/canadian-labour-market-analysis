@@ -4,7 +4,7 @@
 
 This project analyzes Canadian labour market trends using Statistics Canada Labour Force Survey (LFS) data imported into PostgreSQL.
 
-The dataset was cleaned and transformed using SQL and Python before analytical queries were conducted.
+The dataset was cleaned and transformed using SQL and Python before analytical queries were conducted. The same source data was later rebuilt as a Power BI data model to validate the SQL findings and demonstrate the analysis in a BI/reporting tool.
 
 ---
 
@@ -38,7 +38,13 @@ shows near gender parity at 87,000 vs 82,700, while the 55+ cohort remains
 in the Medium tier at 157,300 and 130,200 respectively.
 
 ---
+## Power BI Cross-Validation
 
+The findings above were re-derived independently in Power BI, connecting directly to the raw Statistics Canada source rather than reusing the SQL output. Results matched closely on Findings 1, 2, and 4. Finding 3 (Ontario's share of national employment) initially showed a small but consistent discrepancy — Power BI returned figures roughly 0.3 percentage points below the SQL result across every year, a pattern too consistent to be random noise.
+
+Investigation traced this to duplicate StatsCan estimate vectors: the SQL analysis used `AVG(value)` per year/geography, which averaged these duplicates out, while the initial Power BI measure used `SUM`, which double-counted them. Correcting the DAX measure to match the SQL approach resolved the discrepancy. This is included here as part of the findings record, not just the technical workflow, since catching and explaining the mismatch was itself a meaningful part of the analysis.
+
+---
 ## Technical Workflow
 
 Tools used:
@@ -47,10 +53,15 @@ Tools used:
 - SQL
 - Python
 - Terminal/psql
+- Power BI Desktop
+- Power Query
+- DAX
 
 Processes completed:
 - Data ingestion
 - CSV import troubleshooting
+- Data modeling (star schema, fact/dimension relationships)
+- Cross-tool validation and discrepancy resolution
 - Data cleaning
 - Datatype transformation
 - Exploratory data analysis
