@@ -14,7 +14,7 @@ The project demonstrates end-to-end data engineering and analytics skills includ
 - Structured documentation of analytical findings
 
 **Tools used:** PostgreSQL · pgAdmin · psql · Python · VS Code
-
+---
 Extended into Power BI: the same dataset was rebuilt as a star-schema data model with DAX measures and an interactive two-page report, cross-validating results against the original SQL analysis. Tools used: Power BI Desktop · Power Query · DAX
 ---
 
